@@ -45,7 +45,7 @@ class Client:
 
 
 if __name__ == '__main__':
-    token = 'vk1.a.JxoJoWFTReNOLAljFNSnro8hPf-id5kL96fZMNav2GpjCkRyq-nCjfzKZ7Qw0JGLaqvaGkCGxaQd9wu5gFbbe-lJ9SI8V1ylZAU8b5UtHKuyE7LYY7leev62QD56yu9fVwsmYRhSyPDevWqdjI3QwJwIEV_bHqEPQ8i_-Fh-W0OVYQBk4xuPHfDUq9CbMSFD'
+    token = ''
     url_api = 'https://api.vk.com/method/users.get'
     vk_bot = Bot(token)
     while True:
