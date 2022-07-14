@@ -21,15 +21,16 @@ for event in longpoll.listen():
             if request == "привет":
                 write_msg(event.user_id, f"Хай, {event.user_id}")
                 client_id = event.user_id
+                url_api = 'https://api.vk.com/method/users.get'
+                params = {'user_ids': client_id,
+                          'fields': ('city', 'bdate', 'sex'),
+                          'access_token': token,
+                          'v': '5.131'}
+                response_vk = requests.get(url_api, params=params).json()['response']
+                write_msg(event.user_id, f"Твои данные: {response_vk}")
             elif request == "пока":
                 write_msg(event.user_id, "Пока((")
             else:
                 write_msg(event.user_id, "Не поняла вашего ответа...")
 
 
-url_api = 'https://api.vk.com/method/users.get'
-    params = {'user_ids': client_id,
-              'city', 'bdate', 'sex',
-              'access_token': token,
-              'v': '5.131'}
-    response_vk = requests.get(url_api, params=params).json()['response']['items'])
