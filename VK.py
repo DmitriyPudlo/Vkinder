@@ -1,6 +1,5 @@
 import requests
-from vkinder_bot import Bot
-from heapq import nlargest
+from Bot import Bot
 from datetime import date, datetime
 import time
 
@@ -10,19 +9,13 @@ ALL_PHOTO = 1000
 IN_SEARCH = 6
 WITH_PHOTO = 1
 TYPE_ALBUM = 'profile'
+COUNT_PHOTO = 3
 
 
 def calculate_age(born):
     born_obj = datetime.strptime(born, '%d.%m.%Y')
     today = date.today()
     return today.year - born_obj.year - ((today.month, today.day) < (born_obj.month, born_obj.day))
-
-
-def check_sex(sex):
-    if sex == 1:
-        return 2
-    else:
-        return 1
 
 
 def check_status(user_id):
@@ -40,14 +33,15 @@ class VK:
         self.host = 'https://api.vk.com/method'
 
     def search_client_info(self, user_id):
+        check_sex = {1: 2, 2: 1}
         params = {'user_ids': user_id,
                   'fields': 'city, sex, bdate',
                   'access_token': self.token,
                   'v': '5.131'}
-        response_vk = requests.get(f'{self.host}/users.get', params=params).json()['response']
-        criteria_search = {'city': response_vk[0]['city']['id'],
-                           'sex': check_sex(response_vk[0]['sex']),
-                           'age': calculate_age(response_vk[0]['bdate'])}
+        response_vk = requests.get(f'{self.host}/users.get', params=params).json()['response'][0]
+        criteria_search = {'city': response_vk['city']['id'],
+                           'sex': check_sex[response_vk['sex']],
+                           'age': calculate_age(response_vk['bdate'])}
         return criteria_search
 
     def search_candidate(self, criteria):
@@ -73,13 +67,8 @@ class VK:
                   'access_token': self.token,
                   'v': '5.131'}
         response_vk = requests.get(f'{self.host}/photos.get', params=params).json()['response']['items']
-        all_likes = [info['likes']['count'] for info in response_vk]
-        most_likes = nlargest(3, all_likes)
-        urls_photo = []
-        for count in most_likes:
-            for info in response_vk:
-                if info['likes']['count'] == count:
-                    urls_photo.append(info['sizes'][-1]['url'])
+        response_vk = sorted(response_vk, reverse=True, key=lambda item: item['likes']['count'])
+        urls_photo = [info['sizes'][-1]['url'] for info in response_vk[:COUNT_PHOTO]]
         return urls_photo
 
 
@@ -93,4 +82,3 @@ if __name__ == '__main__':
         answer = vk_bot.speak()
         if type(answer) == int:  # and answer not in BD
             search_criteria = get.search_client_info(answer)
-
