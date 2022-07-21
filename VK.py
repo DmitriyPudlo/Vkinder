@@ -23,7 +23,11 @@ def check_status(user_id):
     params = {'user_ids': user_id,
               'access_token': token_for_get,
               'v': '5.131'}
-    if not requests.get('https://api.vk.com/method/users.get', params=params).json()['response'][0]['is_closed']:
+    requests_json = requests.get('https://api.vk.com/method/users.get', params=params).json()
+    response = requests_json['response']
+    response_open = response[0]
+    is_closed = response_open['is_closed']
+    if not is_closed:
         return True
 
 
@@ -38,10 +42,12 @@ class VK:
                   'fields': 'city, sex, bdate',
                   'access_token': self.token,
                   'v': '5.131'}
-        response_vk = requests.get(f'{self.host}/users.get', params=params).json()['response'][0]
-        criteria_search = {'city': response_vk['city']['id'],
-                           'sex': check_sex[response_vk['sex']],
-                           'age': calculate_age(response_vk['bdate'])}
+        requests_json = requests.get(f'{self.host}/users.get', params=params).json()
+        response = requests_json['response']
+        response_open = response[0]
+        criteria_search = {'city': response_open['city']['id'],
+                           'sex': check_sex[response_open['sex']],
+                           'age': calculate_age(response_open['bdate'])}
         return criteria_search
 
     def search_candidate(self, criteria):
@@ -55,8 +61,10 @@ class VK:
                   'access_token': self.token,
                   'is_closed': False,
                   'v': '5.131'}
-        response_vk = requests.get(f'{self.host}/users.search', params=params).json()['response']['items']
-        candidates_ids = [info['id'] for info in response_vk if check_status(info['id'])]
+        requests_json = requests.get(f'{self.host}/users.search', params=params).json()
+        response = requests_json['response']
+        infos = response['items']
+        candidates_ids = [info['id'] for info in infos if check_status(info['id'])]
         return candidates_ids
 
     def url_photo(self, candidate_id):
@@ -66,9 +74,11 @@ class VK:
                   'extended': True,
                   'access_token': self.token,
                   'v': '5.131'}
-        response_vk = requests.get(f'{self.host}/photos.get', params=params).json()['response']['items']
-        response_vk = sorted(response_vk, reverse=True, key=lambda item: item['likes']['count'])
-        urls_photo = [info['sizes'][-1]['url'] for info in response_vk[:COUNT_PHOTO]]
+        requests_json = requests.get(f'{self.host}/photos.get', params=params).json()
+        response = requests_json['response']
+        infos = response['items']
+        infos = sorted(infos, reverse=True, key=lambda item: item['likes']['count'])
+        urls_photo = [info['sizes'][-1]['url'] for info in infos[:COUNT_PHOTO]]
         return urls_photo
 
 
