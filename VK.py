@@ -1,10 +1,9 @@
 import requests
-from Bot import Bot
 from datetime import date, datetime
 import time
 
 
-COUNT_CANDIDATE = 50
+COUNT_CANDIDATE = 10
 ALL_PHOTO = 1000
 IN_SEARCH = 6
 WITH_PHOTO = 1
@@ -18,23 +17,22 @@ def calculate_age(born):
     return today.year - born_obj.year - ((today.month, today.day) < (born_obj.month, born_obj.day))
 
 
-def check_status(user_id):
-    time.sleep(0.2)
-    params = {'user_ids': user_id,
-              'access_token': token_for_get,
-              'v': '5.131'}
-    requests_json = requests.get('https://api.vk.com/method/users.get', params=params).json()
-    response = requests_json['response']
-    response_open = response[0]
-    is_closed = response_open['is_closed']
-    if not is_closed:
-        return True
-
-
 class VK:
     def __init__(self, token):
         self.token = token
         self.host = 'https://api.vk.com/method'
+
+    def check_status(self, user_id):
+        time.sleep(0.2)
+        params = {'user_ids': user_id,
+                  'access_token': self.token,
+                  'v': '5.131'}
+        requests_json = requests.get('https://api.vk.com/method/users.get', params=params).json()
+        response = requests_json['response']
+        response_open = response[0]
+        is_closed = response_open['is_closed']
+        if not is_closed:
+            return True
 
     def search_client_info(self, user_id):
         check_sex = {1: 2, 2: 1}
@@ -64,10 +62,10 @@ class VK:
         requests_json = requests.get(f'{self.host}/users.search', params=params).json()
         response = requests_json['response']
         infos = response['items']
-        candidates_ids = [info['id'] for info in infos if check_status(info['id'])]
+        candidates_ids = [info['id'] for info in infos if self.check_status(info['id'])]
         return candidates_ids
 
-    def url_photo(self, candidate_id):
+    def photos_ids(self, candidate_id):
         params = {'owner_id': candidate_id,
                   'album_id': TYPE_ALBUM,
                   'count': ALL_PHOTO,
@@ -78,17 +76,23 @@ class VK:
         response = requests_json['response']
         infos = response['items']
         infos = sorted(infos, reverse=True, key=lambda item: item['likes']['count'])
-        urls_photo = [info['sizes'][-1]['url'] for info in infos[:COUNT_PHOTO]]
-        return urls_photo
+        photos_ids = [info['id'] for info in infos[:COUNT_PHOTO]]
+        return photos_ids
 
-
-if __name__ == '__main__':
-    token_for_bot = ''
-    token_for_get = ''
-    vk_bot = Bot(token_for_bot)
-    answer = vk_bot.speak()
-    get = VK(token_for_get)
-    while True:
-        answer = vk_bot.speak()
-        if type(answer) == int:  # and answer not in BD
-            search_criteria = get.search_client_info(answer)
+    def show_candidate(self, candidate_id, photos_ids):
+        params = {'user_ids': candidate_id,
+                  'fields': 'sex',
+                  'access_token': self.token,
+                  'v': '5.131'}
+        address = {1: 'её', 2: 'его'}
+        requests_json = requests.get(f'{self.host}/users.get', params=params).json()
+        response = requests_json['response']
+        response_open = response[0]
+        first_name = response_open['first_name']
+        last_name = response_open['last_name']
+        sex = response_open['sex']
+        user_id = response_open['id']
+        name = f'''Имя кандидата: {first_name} {last_name}
+                   Ссылка на {address[sex]} профиль: https://vk.com/id{user_id}'''
+        attachments = [f'photo{candidate_id}_{photo_id}' for photo_id in photos_ids]
+        return candidate_id, name, attachments
