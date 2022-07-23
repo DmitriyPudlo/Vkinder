@@ -95,4 +95,5 @@ class VK:
         name = f'''Имя кандидата: {first_name} {last_name}
                    Ссылка на {address[sex]} профиль: https://vk.com/id{user_id}'''
         attachments = [f'photo{candidate_id}_{photo_id}' for photo_id in photos_ids]
-        return candidate_id, name, attachments
+        attachments = ','.join(attachments)
+        return name, attachments
