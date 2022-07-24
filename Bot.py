@@ -1,6 +1,7 @@
 from random import randrange
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.keyboard import VkKeyboard
 
 
 class Bot:
@@ -9,36 +10,49 @@ class Bot:
         self.vk = vk_api.VkApi(token=token)
         self.longpoll = VkLongPoll(self.vk)
 
-    def write_msg(self, user_id, message, *attachment):
+    def write_msg(self, user_id, message, attachment=None, keyboard=None):
         self.vk.method('messages.send', {'user_id': user_id,
                                          'message': message,
                                          'random_id': randrange(10 ** 7),
-                                         'attachment': attachment})
+                                         'attachment': attachment,
+                                         'keyboard': keyboard})
+
+    def greeting(self):
+        for event in self.longpoll.listen():
+            if event.type == VkEventType.USER_TYPING:
+                keyboard = VkKeyboard(one_time=True)
+                keyboard.add_button('СТАРТ')
+                keyboard = keyboard.get_keyboard()
+                self.write_msg(event.user_id, 'Для начала работы нажми одну из кнопок!',
+                               attachment=None, keyboard=keyboard)
+            break
 
     def speak(self):
+        keyboard = VkKeyboard(one_time=True)
+        keyboard.add_button('СЛЕДУЮЩИЙ')
+        keyboard.add_button('СТОП')
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
                 if event.to_me:
                     request = event.text
-                    if request == "Start":
+                    if request == "СТАРТ":
+                        keyboard = keyboard.get_keyboard()
                         self.write_msg(event.user_id,
-                                       "Сейчас я изучу твой профиль и постараюсь найти для тебя подходящего кандидата!")
+                                       "Сейчас я изучу твой профиль и постараюсь найти для тебя подходящего кандидата!",
+                                       attachment=None, keyboard=keyboard)
                         return event.user_id
-                    elif request == "Стоп":
-                        self.write_msg(event.user_id,
-                                       "Пока!")
-                        break
-                    elif request == "Следующий":
-                        self.write_msg(event.user_id,
-                                       "Сейчас поищу...")
-                        break
-                    else:
-                        self.write_msg(event.user_id,
-                                       "Не понял вашего ответа... Если не знаете что делать, наберите 'Help'")
+                    elif request == "СЛЕДУЮЩИЙ":
+                        keyboard = keyboard.get_keyboard()
+                        self.write_msg(event.user_id, "Сейчас поищу...", attachment=None, keyboard=keyboard)
+                        return "СЛЕДУЮЩИЙ"
+                    elif request == "СТОП":
+                        self.write_msg(event.user_id, "Пока!")
+                        return "СТОП"
 
     def response(self, info):
         for event in self.longpoll.listen():
-            self.write_msg(event.user_id, info[1])
-            for id_photo in info[2]:
-                self.write_msg(event.user_id, 'Фотография:', id_photo)
+            candidate_info = info[0]
+            attachment = info[1]
+            self.write_msg(event.user_id, candidate_info, attachment)
             break
+

@@ -6,9 +6,10 @@ if __name__ == '__main__':
     token_for_get = ''
     vk_bot = Bot(token_for_bot)
     get = VK(token_for_get)
+    vk_bot.greeting()
     while True:
         command = vk_bot.speak()
-        if type(command) == int:
+        if isinstance(command, int):
             criteria_search = get.search_client_info(command)
             candidates_ids = get.search_candidate(criteria_search)
             for id_candidate in candidates_ids:
@@ -16,8 +17,8 @@ if __name__ == '__main__':
                 to_bot = get.show_candidate(id_candidate, photos_ids)
                 answer = vk_bot.response(to_bot)
                 command = vk_bot.speak()
-                if command == 'Следующий':
+                if command == 'СЛЕДУЮЩИЙ':
                     continue
-                elif command == 'Стоп':
+                elif command == 'СТОП':
                     break
 
