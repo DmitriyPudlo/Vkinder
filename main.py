@@ -9,7 +9,7 @@ if __name__ == '__main__':
     vk_bot.greeting()
     while True:
         command = vk_bot.speak()
-        if type(command) == int:
+        if isinstance(command, int):
             criteria_search = get.search_client_info(command)
             candidates_ids = get.search_candidate(criteria_search)
             for id_candidate in candidates_ids:

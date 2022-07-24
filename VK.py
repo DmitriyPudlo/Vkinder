@@ -22,18 +22,6 @@ class VK:
         self.token = token
         self.host = 'https://api.vk.com/method'
 
-    def check_status(self, user_id):
-        time.sleep(0.2)
-        params = {'user_ids': user_id,
-                  'access_token': self.token,
-                  'v': '5.131'}
-        requests_json = requests.get('https://api.vk.com/method/users.get', params=params).json()
-        response = requests_json['response']
-        response_open = response[0]
-        is_closed = response_open['is_closed']
-        if not is_closed:
-            return True
-
     def search_client_info(self, user_id):
         check_sex = {1: 2, 2: 1}
         params = {'user_ids': user_id,
@@ -57,12 +45,11 @@ class VK:
                   'age_to': criteria['age'],
                   'has_photo': WITH_PHOTO,
                   'access_token': self.token,
-                  'is_closed': False,
                   'v': '5.131'}
         requests_json = requests.get(f'{self.host}/users.search', params=params).json()
         response = requests_json['response']
         infos = response['items']
-        candidates_ids = [info['id'] for info in infos if self.check_status(info['id'])]
+        candidates_ids = [info['id'] for info in infos if not info['is_closed']]
         return candidates_ids
 
     def photos_ids(self, candidate_id):
