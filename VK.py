@@ -1,6 +1,5 @@
 import requests
 from datetime import date, datetime
-import time
 
 
 COUNT_CANDIDATE = 10
@@ -41,10 +40,11 @@ class VK:
                   'city': criteria['city'],
                   'sex': criteria['sex'],
                   'status': IN_SEARCH,
-                  'age_from': criteria['age'],
-                  'age_to': criteria['age'],
+                  'age_from': criteria['age'] - 3,
+                  'age_to': criteria['age'] + 3,
                   'has_photo': WITH_PHOTO,
                   'access_token': self.token,
+                  'is_closed': False,
                   'v': '5.131'}
         requests_json = requests.get(f'{self.host}/users.search', params=params).json()
         response = requests_json['response']
