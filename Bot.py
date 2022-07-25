@@ -23,8 +23,7 @@ class Bot:
                 keyboard = VkKeyboard(one_time=True)
                 keyboard.add_button('СТАРТ')
                 keyboard = keyboard.get_keyboard()
-                self.write_msg(event.user_id, 'Для начала работы нажми одну из кнопок!',
-                               attachment=None, keyboard=keyboard)
+                self.write_msg(event.user_id, 'Для начала работы нажми одну из кнопок!', keyboard=keyboard)
             return event.user_id
 
     def speak(self):
@@ -34,30 +33,37 @@ class Bot:
                     request = event.text
                     if request == "СТАРТ":
                         self.write_msg(event.user_id,
-                                       "Сейчас я изучу твой профиль и постараюсь найти для тебя подходящего кандидата!",
-                                       attachment=None, keyboard=None)
-                        return "СТАРТ"
+                                       "Сейчас я изучу твой профиль и постараюсь найти для тебя подходящего кандидата!")
+                        return
                     elif request == "СЛЕДУЮЩИЙ":
-                        self.write_msg(event.user_id, "Сейчас поищу...", attachment=None, keyboard=None)
-                        return "СЛЕДУЮЩИЙ"
+                        self.write_msg(event.user_id, "Сейчас поищу...")
+                        return
+                    elif request == "ИЗБРАННЫЕ":
+                        self.write_msg(event.user_id, "Еще не реализовано")
+                        return
                     elif request == "СТОП":
                         self.write_msg(event.user_id, "Пока!")
-                        return "СТОП"
+                        return True
 
     def response(self, info):
         keyboard = VkKeyboard(one_time=True)
         keyboard.add_button('СЛЕДУЮЩИЙ')
         keyboard.add_button('СТОП')
+        keyboard.add_button('ДОБАВИТЬ В ИЗБРАННЫЕ')
+        keyboard.add_button('ПОКАЗАТЬ ИЗБРАННЫХ')
         keyboard = keyboard.get_keyboard()
         for event in self.longpoll.listen():
             candidate_info = info[0]
             attachment = info[1]
             self.write_msg(event.user_id, candidate_info, attachment, keyboard=keyboard)
-
             break
 
     def ending(self):
+        keyboard = VkKeyboard(one_time=True)
+        keyboard.add_button('ЗАДАТЬ НОВЫЕ КРИТЕРИИ')
+        keyboard.add_button('ПОКАЗАТЬ ИЗБРАННЫХ')
+        keyboard = keyboard.get_keyboard()
         for event in self.longpoll.listen():
-            self.write_msg(event.user_id, 'Больше никого по заданным критериям не нашел.')
+            self.write_msg(event.user_id, 'Больше никого по заданным критериям не нашел.', keyboard=keyboard)
             break
 
