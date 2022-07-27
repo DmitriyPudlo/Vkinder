@@ -2,7 +2,7 @@ from random import randrange
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 import Keyboard
-from BD import add_favor, show_favor
+from BD import add_favor
 
 
 class Bot:
@@ -35,7 +35,7 @@ class Bot:
                                        "Сейчас я изучу твой профиль и постараюсь найти для тебя подходящего партнёра!")
                         return
 
-    def speak(self, user_id):
+    def speak(self, user_id=None):
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
                 if event.to_me:
@@ -47,43 +47,42 @@ class Bot:
                         add_favor(user_id)
                         keyboard = Keyboard.add_favor_key()
                         self.write_msg(event.user_id, "Добавлен в ваш список избранных!", keyboard=keyboard)
-                        return self.speak(user_id)
+                        return self.speak()
                     elif request == "Показать избранных":
                         self.write_msg(event.user_id, "Сейчас выведу ваших избранных")
                         return "Показать избранных"
                     elif request == 'Продолжить просмотр кандидатов':
                         self.write_msg(event.user_id, "Возвращаемся к просмотру кандидатов")
-                        return 'Продолжить'
+                        return 'Продолжить просмотр кандидатов'
                     elif request == "Стоп":
                         self.write_msg(event.user_id, "Пока!")
                         return "Стоп"
 
     def response(self, info):
-        keyboard = Keyboard.response_key()
         for event in self.longpoll.listen():
             candidate_info = info[0]
             attachment = info[1]
             self.write_msg(event.user_id, candidate_info, attachment)
-            self.write_msg(event.user_id, '____________________', keyboard=keyboard)
-            break
+            return
 
     def response_favor(self, info):
-        keyboard = Keyboard.response_favor()
         for event in self.longpoll.listen():
             candidate_info = info[0]
             attachment = info[1]
-            self.write_msg(event.user_id, candidate_info, attachment, keyboard=keyboard)
-            break
+            self.write_msg(event.user_id, candidate_info, attachment)
+            return
 
     def ending(self):
-        keyboard = Keyboard.ending_key()
         for event in self.longpoll.listen():
-            self.write_msg(event.user_id, 'Больше никого по заданным критериям не нашел', keyboard=keyboard)
-            return self.speak(event.user_id)
+            self.write_msg(event.user_id, 'Больше никого по заданным критериям не нашел')
+            return
 
     def favor_ending(self):
-        keyboard = Keyboard.favor_ending_key()
         for event in self.longpoll.listen():
-            self.write_msg(event.user_id, 'Избранных больше нет', keyboard=keyboard)
-            return self.speak(event.user_id)
+            self.write_msg(event.user_id, 'Избранных больше нет')
+            return
 
+    def show_key(self, keyboard):
+        for event in self.longpoll.listen():
+            self.write_msg(event.user_id, '____________________', keyboard=keyboard)
+            return
