@@ -1,76 +1,28 @@
 from vk_api.keyboard import VkKeyboard
 
 
-def VkKeyboard_get(func):
-    def wrapper(*args, **kwargs):
-        keyboard = func(*args, **kwargs)
-        keyboard = keyboard.get_keyboard()
-        return keyboard
-    return wrapper
-
-
-@VkKeyboard_get
-def greeting_key():
+def create_keyboard(button_names):
     keyboard = VkKeyboard(one_time=True)
-    keyboard.add_button('Старт') #после реализации кнопок ниже - удалить
-    # keyboard.add_button('Задать критерии поиска')
-    # keyboard.add_button('Поиск по-умолчанию')
-    # keyboard.add_button('Показать избранных')
+    for button_name in button_names:
+        keyboard.add_button(button_name)
+    keyboard = keyboard.get_keyboard()
     return keyboard
 
 
-@VkKeyboard_get
-def response_key():
-    keyboard = VkKeyboard(one_time=True)
-    keyboard.add_button('Следующий')
-    keyboard.add_button('Стоп')
-    keyboard.add_button('Добавить в избранные')
-    keyboard.add_button('Показать избранных')
-    return keyboard
+greeting = ['Старт']
+response = ['Следующий', "Стоп", "Добавить в избранные", "Показать избранных"]
+ending = ["Показать избранных", "Стоп"]
+favor_ending = ['Продолжить просмотр кандидатов']
+add_favor = ['Следующий', "Стоп", "Показать избранных"]
+response_favor = ['Следующий из списка избранных', 'Продолжить просмотр кандидатов']
+response_favor_without_candidates = ['Следующий из списка избранных']
+favor_ending_without_candidates = ['Стоп']
 
-
-@VkKeyboard_get
-def ending_key():
-    keyboard = VkKeyboard(one_time=True)
-    # keyboard.add_button('ЗАДАТЬ НОВЫЕ КРИТЕРИИ')
-    keyboard.add_button('Показать избранных')
-    keyboard.add_button('Стоп')
-    return keyboard
-
-
-@VkKeyboard_get
-def favor_ending_key():
-    keyboard = VkKeyboard(one_time=True)
-    keyboard.add_button('Продолжить просмотр кандидатов')
-    return keyboard
-
-
-@VkKeyboard_get
-def add_favor_key():
-    keyboard = VkKeyboard(one_time=True)
-    keyboard.add_button('Следующий')
-    keyboard.add_button('Стоп')
-    keyboard.add_button('Показать избранных')
-    return keyboard
-
-
-@VkKeyboard_get
-def response_favor():
-    keyboard = VkKeyboard(one_time=True)
-    keyboard.add_button('Следующий из списка избранных')
-    keyboard.add_button('Продолжить просмотр кандидатов')
-    return keyboard
-
-
-@VkKeyboard_get
-def response_favor_without_candidates():
-    keyboard = VkKeyboard(one_time=True)
-    keyboard.add_button('Следующий из списка избранных')
-    return keyboard
-
-
-@VkKeyboard_get
-def favor_ending_without_candidates():
-    keyboard = VkKeyboard(one_time=True)
-    keyboard.add_button('Стоп')
-    return keyboard
+greeting_key = create_keyboard(greeting)
+response_key = create_keyboard(response)
+ending_key = create_keyboard(ending)
+favor_ending_key = create_keyboard(favor_ending)
+add_favor_key = create_keyboard(add_favor)
+response_favor_key = create_keyboard(response_favor)
+response_favor_without_candidates_key = create_keyboard(response_favor_without_candidates)
+favor_ending_without_candidates_key = create_keyboard(favor_ending_without_candidates)
