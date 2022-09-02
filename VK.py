@@ -2,7 +2,7 @@ import requests
 from datetime import date, datetime
 
 
-COUNT_CANDIDATE = 10
+COUNT_CANDIDATE = 1000
 ALL_PHOTO = 1000
 IN_SEARCH = 6
 WITH_PHOTO = 1

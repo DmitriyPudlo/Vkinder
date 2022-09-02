@@ -4,6 +4,9 @@ from random import randrange
 from VK import VK
 import vk_api
 import Keyboard
+from db import add_client, del_client, add_candidate, add_photo, show_candidates, show_photo, check_existing_db, create_tables
+import psycopg2
+import config_db
 
 
 class Bot:
@@ -38,7 +41,7 @@ class Bot:
                                        "Сейчас я изучу твой профиль и постараюсь найти для тебя подходящего партнёра!")
                         return
 
-    def speak(self, user_id=None):
+    def speak(self, user_id=None, photos_id=None):
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
                 if event.to_me:
@@ -47,7 +50,9 @@ class Bot:
                         self.write_msg(event.user_id, "Сейчас поищу...")
                         return
                     elif request == "Добавить в избранные":
-                        add_favor(user_id)
+                        add_candidate(event.user_id, user_id)
+                        for photo_id in photos_id:
+                            add_photo(user_id, photo_id)
                         keyboard = Keyboard.add_favor_key
                         self.write_msg(event.user_id, "Добавлен в ваш список избранных!", keyboard=keyboard)
                         return self.speak()
@@ -91,7 +96,14 @@ class Bot:
             return
 
     def bot_start(self):
+        conn = psycopg2.connect(database=config_db.DATABASE, user=config_db.USER, password=config_db.PASSWORD)
+        conn.autocommit = True
+        cursor_db = conn.cursor()
+        check_existing_db(cursor_db)
+        create_tables(cursor_db)
+        conn.close()
         client_id = self.greeting()
+        add_client(client_id)
         self.start()
         while True:
             criteria_search = self.get.search_client_info(client_id)
@@ -101,11 +113,11 @@ class Bot:
                 to_bot = self.get.show_candidate(id_candidate, photos_ids)
                 self.response(to_bot)
                 self.show_key(Keyboard.response_key)
-                command = self.speak(id_candidate)
+                command = self.speak(id_candidate, photos_ids)
                 if command == "Показать избранных":
                     response_favor = Keyboard.response_favor_key
                     favor_ending = Keyboard.favor_ending_key
-                    self.show_favor(response_favor, favor_ending)
+                    self.show_favor(response_favor, favor_ending, client_id)
                 elif command == "Стоп":
                     break
             self.ending()
@@ -114,13 +126,13 @@ class Bot:
             if command == "Показать избранных":
                 favor_without_candidates = Keyboard.response_favor_without_candidates_key
                 favor_ending_without_candidates = Keyboard.favor_ending_without_candidates_key
-                self.show_favor(favor_without_candidates, favor_ending_without_candidates)
+                self.show_favor(favor_without_candidates, favor_ending_without_candidates, client_id)
             break
 
-    def show_favor(self, key_begin, key_end):
-        favor_ids = show_favor_bd()
+    def show_favor(self, key_begin, key_end, client_id):
+        favor_ids = show_candidates(client_id)
         for favor_id in favor_ids:
-            favor_photos_ids = self.get.photos_ids(favor_id)
+            favor_photos_ids = show_photo(favor_id)
             favor_to_bot = self.get.show_candidate(favor_id, favor_photos_ids)
             self.response_favor(favor_to_bot)
             self.show_key(key_begin)
