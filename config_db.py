@@ -1,3 +1,3 @@
 DATABASE = 'vkinder'
 USER = 'postgres'
-PASSWORD = 'postgres'
+PASSWORD = '3616'

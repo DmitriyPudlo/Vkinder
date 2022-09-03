@@ -1,13 +1,14 @@
 from vk_api.longpoll import VkLongPoll, VkEventType
-from BD import show_favor_bd, add_favor
 from random import randrange
 from VK import VK
+from db import Connector
 import vk_api
 import Keyboard
-from db import add_client, del_client, add_candidate, add_photo, show_candidates, show_photo, check_existing_db, create_tables
-import psycopg2
-import config_db
 
+
+def to_list(tuple_):
+    list_ = [elem[0] for elem in tuple_]
+    return list_
 
 class Bot:
     def __init__(self, token_for_bot, token_for_get):
@@ -16,6 +17,8 @@ class Bot:
         self.vk = vk_api.VkApi(token=self.token_for_bot)
         self.longpoll = VkLongPoll(self.vk)
         self.get = VK(token_for_get)
+        self.connect = Connector()
+        self.connect.create_tables()
 
     def write_msg(self, user_id, message, attachment=None, keyboard=None):
         self.vk.method('messages.send', {'user_id': user_id,
@@ -50,9 +53,9 @@ class Bot:
                         self.write_msg(event.user_id, "Сейчас поищу...")
                         return
                     elif request == "Добавить в избранные":
-                        add_candidate(event.user_id, user_id)
+                        self.connect.add_candidate(event.user_id, user_id)
                         for photo_id in photos_id:
-                            add_photo(user_id, photo_id)
+                            self.connect.add_photo(user_id, photo_id)
                         keyboard = Keyboard.add_favor_key
                         self.write_msg(event.user_id, "Добавлен в ваш список избранных!", keyboard=keyboard)
                         return self.speak()
@@ -96,14 +99,8 @@ class Bot:
             return
 
     def bot_start(self):
-        conn = psycopg2.connect(database=config_db.DATABASE, user=config_db.USER, password=config_db.PASSWORD)
-        conn.autocommit = True
-        cursor_db = conn.cursor()
-        check_existing_db(cursor_db)
-        create_tables(cursor_db)
-        conn.close()
         client_id = self.greeting()
-        add_client(client_id)
+        self.connect.add_client(client_id)
         self.start()
         while True:
             criteria_search = self.get.search_client_info(client_id)
@@ -127,12 +124,15 @@ class Bot:
                 favor_without_candidates = Keyboard.response_favor_without_candidates_key
                 favor_ending_without_candidates = Keyboard.favor_ending_without_candidates_key
                 self.show_favor(favor_without_candidates, favor_ending_without_candidates, client_id)
+            self.connect.connect_close()
             break
 
     def show_favor(self, key_begin, key_end, client_id):
-        favor_ids = show_candidates(client_id)
+        favor_ids = self.connect.show_candidates(client_id)
+        favor_ids = to_list(favor_ids)
         for favor_id in favor_ids:
-            favor_photos_ids = show_photo(favor_id)
+            favor_photos_ids = self.connect.show_photo(favor_id)
+            favor_photos_ids = to_list(favor_photos_ids)
             favor_to_bot = self.get.show_candidate(favor_id, favor_photos_ids)
             self.response_favor(favor_to_bot)
             self.show_key(key_begin)
