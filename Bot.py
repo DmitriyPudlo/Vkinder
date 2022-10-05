@@ -10,6 +10,20 @@ def to_list(tuple_):
     list_ = [elem[0] for elem in tuple_]
     return list_
 
+
+def prepare_info(candidate_id, response, photos_ids):
+    address = {1: 'её', 2: 'его'}
+    first_name = response['first_name']
+    last_name = response['last_name']
+    sex = response['sex']
+    user_id = response['id']
+    name = f'''Имя кандидата: {first_name} {last_name}
+               Ссылка на {address[sex]} профиль: https://vk.com/id{user_id}'''
+    attachments = [f'photo{candidate_id}_{photo_id}' for photo_id in photos_ids]
+    attachments = ','.join(attachments)
+    return name, attachments
+
+
 class Bot:
     def __init__(self, token_for_bot, token_for_get):
         self.token_for_bot = token_for_bot
@@ -107,7 +121,8 @@ class Bot:
             candidates_ids = self.get.search_candidate(criteria_search)
             for id_candidate in candidates_ids:
                 photos_ids = self.get.photos_ids(id_candidate)
-                to_bot = self.get.show_candidate(id_candidate, photos_ids)
+                response = self.get.show_candidate(id_candidate)
+                to_bot = prepare_info(id_candidate, response, photos_ids)
                 self.response(to_bot)
                 self.show_key(Keyboard.response_key)
                 command = self.speak(id_candidate, photos_ids)
@@ -133,7 +148,8 @@ class Bot:
         for favor_id in favor_ids:
             favor_photos_ids = self.connect.show_photo(favor_id)
             favor_photos_ids = to_list(favor_photos_ids)
-            favor_to_bot = self.get.show_candidate(favor_id, favor_photos_ids)
+            response = self.get.show_candidate(favor_id)
+            favor_to_bot = prepare_info(favor_id, response, favor_photos_ids)
             self.response_favor(favor_to_bot)
             self.show_key(key_begin)
             answer = self.speak()

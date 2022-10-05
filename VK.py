@@ -66,21 +66,12 @@ class VK:
         photos_ids = [info['id'] for info in infos[:COUNT_PHOTO]]
         return photos_ids
 
-    def show_candidate(self, candidate_id, photos_ids):
+    def show_candidate(self, candidate_id):
         params = {'user_ids': candidate_id,
                   'fields': 'sex',
                   'access_token': self.token,
                   'v': '5.131'}
-        address = {1: 'её', 2: 'его'}
         requests_json = requests.get(f'{self.host}/users.get', params=params).json()
         response = requests_json['response']
         response_open = response[0]
-        first_name = response_open['first_name']
-        last_name = response_open['last_name']
-        sex = response_open['sex']
-        user_id = response_open['id']
-        name = f'''Имя кандидата: {first_name} {last_name}
-                   Ссылка на {address[sex]} профиль: https://vk.com/id{user_id}'''
-        attachments = [f'photo{candidate_id}_{photo_id}' for photo_id in photos_ids]
-        attachments = ','.join(attachments)
-        return name, attachments
+        return response_open
