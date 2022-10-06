@@ -1,8 +1,7 @@
 import requests
 from datetime import date, datetime
 
-
-COUNT_CANDIDATE = 1000
+COUNT_CANDIDATE = 15
 ALL_PHOTO = 1000
 IN_SEARCH = 6
 WITH_PHOTO = 1
@@ -35,8 +34,10 @@ class VK:
                            'age': calculate_age(response_open['bdate'])}
         return criteria_search
 
-    def search_candidate(self, criteria):
-        params = {'count': COUNT_CANDIDATE,
+    def search_candidate(self, criteria, count=None):
+        if not count:
+            count = COUNT_CANDIDATE
+        params = {'count': count,
                   'city': criteria['city'],
                   'sex': criteria['sex'],
                   'status': IN_SEARCH,
@@ -74,4 +75,7 @@ class VK:
         requests_json = requests.get(f'{self.host}/users.get', params=params).json()
         response = requests_json['response']
         response_open = response[0]
-        return response_open
+        result = {'first_name': response_open['first_name'],
+                  'last_name': response_open['last_name'],
+                  'sex': response_open['sex']}
+        return result

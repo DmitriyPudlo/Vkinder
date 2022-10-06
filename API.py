@@ -1,20 +1,46 @@
 from VK import VK
-import tokens
-import vk_api
+from flask import Flask, jsonify, make_response, abort, request
+import time
 
-vk = VK(tokens.GET_TOKEN)
+
+app = Flask(__name__)
 
 
 def prepare_info(candidate_id, response, photos_ids):
     first_name = response['first_name']
     last_name = response['last_name']
-    user_id = response['id']
     photos_url = [f'https://vk.com/photo{candidate_id}_{photo_id}' for photo_id in photos_ids]
-    photos_url = ','.join(photos_url)
     info = {'first_name': first_name,
             'last_name': last_name,
-            'url': user_id,
+            'url': f'https://vk.com/id{candidate_id}',
             'photos_url': photos_url}
     return info
+
+
+@app.route('/vkinder/candidate', methods=['GET'])
+def get_candidate():
+    user_id = request.args.get('user_id')
+    token = request.args.get('token')
+    count = request.args.get('count')
+    if count:
+        count = int(count)
+    if not token or not user_id:
+        abort(404)
+    vk = VK(token)
+    to_response = []
+    criteria_search = vk.search_client_info(user_id)
+    candidates_ids = vk.search_candidate(criteria_search, count=count)
+    for id_candidate in candidates_ids:
+        photos_ids = vk.photos_ids(id_candidate)
+        response = vk.show_candidate(id_candidate)
+        time.sleep(0.5)
+        candidates_info = prepare_info(id_candidate, response, photos_ids)
+        to_response.append(candidates_info)
+    return jsonify(to_response)
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
 
 

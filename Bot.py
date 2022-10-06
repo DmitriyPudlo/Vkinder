@@ -16,9 +16,8 @@ def prepare_info(candidate_id, response, photos_ids):
     first_name = response['first_name']
     last_name = response['last_name']
     sex = response['sex']
-    user_id = response['id']
     name = f'''Имя кандидата: {first_name} {last_name}
-               Ссылка на {address[sex]} профиль: https://vk.com/id{user_id}'''
+               Ссылка на {address[sex]} профиль: https://vk.com/id{candidate_id}'''
     attachments = [f'photo{candidate_id}_{photo_id}' for photo_id in photos_ids]
     attachments = ','.join(attachments)
     return name, attachments
