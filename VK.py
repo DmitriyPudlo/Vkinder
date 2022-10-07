@@ -1,7 +1,7 @@
 import requests
 from datetime import date, datetime
 
-COUNT_CANDIDATE = 15
+COUNT_CANDIDATE = 100
 ALL_PHOTO = 1000
 IN_SEARCH = 6
 WITH_PHOTO = 1
@@ -37,6 +37,7 @@ class VK:
     def search_candidate(self, criteria, count=None):
         if not count:
             count = COUNT_CANDIDATE
+        print(count)
         params = {'count': count,
                   'city': criteria['city'],
                   'sex': criteria['sex'],
