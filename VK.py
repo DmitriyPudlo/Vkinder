@@ -34,6 +34,12 @@ class VK:
                            'age': calculate_age(response_open['bdate'])}
         return criteria_search
 
+    def __search_by_params(self, params):
+        requests_json = requests.get(f'{self.host}/users.search', params=params).json()
+        response = requests_json['response']
+        infos = response['items']
+        return infos
+
     def search_candidate(self, criteria, count=None):
         if not count:
             count = COUNT_CANDIDATE
@@ -48,10 +54,18 @@ class VK:
                   'access_token': self.token,
                   'is_closed': False,
                   'v': '5.131'}
-        requests_json = requests.get(f'{self.host}/users.search', params=params).json()
-        response = requests_json['response']
-        infos = response['items']
+        infos = self.__search_by_params(params)
         candidates_ids = [info['id'] for info in infos if not info['is_closed']]
+        if len(candidates_ids) != count:
+            while True:
+                params['offset'] = count
+                infos = self.__search_by_params(params)
+                for info in infos:
+                    if not info['is_closed']:
+                        candidates_ids.append(info['id'])
+                        if len(candidates_ids) == count:
+                            return candidates_ids
+                count += count
         return candidates_ids
 
     def photos_ids(self, candidate_id):

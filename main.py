@@ -9,4 +9,5 @@ if __name__ == '__main__':
     print('START')
     vk_bot = Bot(token_for_bot, token_for_get)
     app.run(debug=True)
-    # vk_bot.bot_start()
+    vk_bot.bot_start()
+
