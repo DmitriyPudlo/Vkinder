@@ -150,3 +150,4 @@ class Bot:
         self.favor_ending()
         self.show_key(key_end)
         return self.speak()
+
