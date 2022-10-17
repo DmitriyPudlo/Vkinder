@@ -28,8 +28,7 @@ def get_candidate():
         abort(404)
     vk = VK(token)
     to_response = []
-    criteria_search = vk.search_client_info(user_id)
-    candidates_ids = vk.search_candidate(criteria_search, count=count)
+    candidates_ids = vk.search_candidate(user_id, count=count)
     for id_candidate in candidates_ids:
         photos_ids = vk.photos_ids(id_candidate)
         response = vk.show_candidate(id_candidate)
