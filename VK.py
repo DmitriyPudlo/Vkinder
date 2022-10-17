@@ -7,6 +7,7 @@ IN_SEARCH = 6
 WITH_PHOTO = 1
 TYPE_ALBUM = 'profile'
 COUNT_PHOTO = 3
+NUMBER_OF_ATTEMPTS = 10000
 
 
 def calculate_age(born):
@@ -20,7 +21,7 @@ class VK:
         self.token = token
         self.host = 'https://api.vk.com/method'
 
-    def search_client_info(self, user_id):
+    def __search_client_info(self, user_id):
         check_sex = {1: 2, 2: 1}
         params = {'user_ids': user_id,
                   'fields': 'city, sex, bdate',
@@ -40,10 +41,8 @@ class VK:
         infos = response['items']
         return infos
 
-    def search_candidate(self, criteria, count=None):
-        if not count:
-            count = COUNT_CANDIDATE
-        print(count)
+    def search_candidate(self, user_id, count=COUNT_CANDIDATE):
+        criteria = self.__search_client_info(user_id)
         params = {'count': count,
                   'city': criteria['city'],
                   'sex': criteria['sex'],
@@ -57,7 +56,7 @@ class VK:
         infos = self.__search_by_params(params)
         candidates_ids = [info['id'] for info in infos if not info['is_closed']]
         if len(candidates_ids) != count:
-            while True:
+            for _ in range(NUMBER_OF_ATTEMPTS):
                 params['offset'] = count
                 infos = self.__search_by_params(params)
                 for info in infos:
