@@ -9,14 +9,24 @@ def create_keyboard(button_names):
     return keyboard
 
 
-greeting = ['Старт']
-response = ['Следующий', "Стоп", "Добавить в избранные", "Показать избранных"]
-ending = ["Показать избранных", "Стоп"]
-favor_ending = ['Продолжить просмотр кандидатов']
-add_favor = ['Следующий', "Стоп", "Показать избранных"]
-response_favor = ['Следующий из списка избранных', 'Продолжить просмотр кандидатов']
-response_favor_without_candidates = ['Следующий из списка избранных']
-favor_ending_without_candidates = ['Стоп']
+class Keyword:
+    START = 'Старт'
+    NEXT = 'Следующий'
+    STOP = "Стоп"
+    ADD_FAVOR = "Добавить в избранные"
+    SHOW_FAVOR = "Показать избранных"
+    CONTINUE = 'Продолжить просмотр кандидатов'
+    NEXT_FAVOR = 'Следующий из списка избранных'
+
+
+greeting = [Keyword.START]
+response = [Keyword.NEXT, Keyword.STOP, Keyword.ADD_FAVOR, Keyword.SHOW_FAVOR]
+ending = [Keyword.SHOW_FAVOR, Keyword.STOP]
+favor_ending = [Keyword.CONTINUE]
+add_favor = [Keyword.NEXT, Keyword.STOP, Keyword.SHOW_FAVOR]
+response_favor = [Keyword.NEXT_FAVOR, Keyword.CONTINUE]
+response_favor_without_candidates = [Keyword.NEXT_FAVOR]
+favor_ending_without_candidates = [Keyword.STOP]
 
 greeting_key = create_keyboard(greeting)
 response_key = create_keyboard(response)
