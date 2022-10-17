@@ -39,6 +39,7 @@ class Connector:
         sql_show_photo = f"SELECT photo_link FROM photo WHERE candidate_id = {candidate_id}"
         self.cursor_db.execute(sql_show_photo)
         photo_list = self.cursor_db.fetchall()
+        photo_list = [elem[0] for elem in photo_list]
         return photo_list
 
     def create_tables(self):
@@ -57,3 +58,17 @@ class Connector:
 
     def connect_close(self):
         self.conn.close()
+
+    def create_db(self):
+        sql_create_database = f'CREATE DATABASE {config_db.DATABASE}'
+        self.cursor_db.execute(sql_create_database)
+
+    def check_existing_db(self):
+        sql_db_exists = f"SELECT datname FROM pg_catalog.pg_database WHERE datname = '{config_db.DATABASE}'"
+        self.cursor_db.execute(sql_db_exists)
+        if not self.cursor_db.fetchall():
+            self.create_db()
+
+    def create_database(self):
+        self.check_existing_db()
+        self.create_tables()
