@@ -2,6 +2,11 @@ import psycopg2
 import config_db
 
 
+def to_list(tuple_):
+    list_ = [elem[0] for elem in tuple_]
+    return list_
+
+
 class Connector:
     def __init__(self):
         self.conn = psycopg2.connect(database=config_db.DATABASE, user=config_db.USER, password=config_db.PASSWORD)
@@ -18,13 +23,15 @@ class Connector:
         sql_del_client = f"DELETE FROM client WHERE client_id = {client_id}"
         self.cursor_db.execute(sql_del_client)
 
-    def add_candidate(self, client_id, candidate_id):
+    def add_candidate(self, client_id, candidate_id, photos_id):
         sql_add_candidate = f"INSERT INTO pair (client_id, candidate_id)" \
                             f"VALUES ('{client_id}', '{candidate_id}')" \
                             f"ON CONFLICT (candidate_id) DO NOTHING"
+        for photo_id in photos_id:
+            self.__add_photo(candidate_id, photo_id)
         self.cursor_db.execute(sql_add_candidate)
 
-    def add_photo(self, candidate_id, id_photo):
+    def __add_photo(self, candidate_id, id_photo):
         sql_add_photo = f"INSERT INTO photo (candidate_id, photo_link)" \
                         f"VALUES ({candidate_id}, {id_photo})"
         self.cursor_db.execute(sql_add_photo)
@@ -33,13 +40,14 @@ class Connector:
         sql_show_candidates = f"SELECT candidate_id FROM pair WHERE client_id = {client_id}"
         self.cursor_db.execute(sql_show_candidates)
         candidate_list = self.cursor_db.fetchall()
+        candidate_list = to_list(candidate_list)
         return candidate_list
 
     def show_photo(self, candidate_id):
         sql_show_photo = f"SELECT photo_link FROM photo WHERE candidate_id = {candidate_id}"
         self.cursor_db.execute(sql_show_photo)
         photo_list = self.cursor_db.fetchall()
-        photo_list = [elem[0] for elem in photo_list]
+        photo_list = to_list(photo_list)
         return photo_list
 
     def create_tables(self):
