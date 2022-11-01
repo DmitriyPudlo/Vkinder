@@ -7,6 +7,7 @@ import Keyboard
 
 FAVOR_COMMANDS = {False: (Keyboard.response_favor_without_candidates_key, Keyboard.favor_ending_without_candidates_key),
                   True: (Keyboard.response_favor_key, Keyboard.favor_ending_key)}
+ADDRESS = {1: 'её', 2: 'его'}
 
 
 class Bot:
@@ -18,7 +19,7 @@ class Bot:
         self.vk = VK(token_for_get)
         self.connect = Connector()
         self.keyword = Keyboard.Keyword()
-        self.FLAG = True
+        self.is_end_dialog = True
 
     def write_msg(self, user_id, message, attachment=None, keyboard=None):
         self.vk_api.method('messages.send', {'user_id': user_id,
@@ -59,7 +60,7 @@ class Bot:
                         return self.speak()
                     elif request == self.keyword.SHOW_FAVOR:
                         self.write_msg(event.user_id, "Сейчас выведу ваших избранных")
-                        self.show_favor(FAVOR_COMMANDS[self.FLAG], event.user_id)
+                        self.show_favor(event.user_id)
                         return
                     elif request == self.keyword.CONTINUE:
                         self.write_msg(event.user_id, "Возвращаемся к просмотру кандидатов")
@@ -78,7 +79,7 @@ class Bot:
     def ending(self):
         for event in self.longpoll.listen():
             self.write_msg(event.user_id, 'Больше никого по заданным критериям не нашел')
-            self.FLAG = False
+            self.is_end_dialog = False
             return
 
     def favor_ending(self):
@@ -98,7 +99,7 @@ class Bot:
             candidates_ids = self.vk.search_candidate(client_id)
             for id_candidate in candidates_ids:
                 photos_ids = self.vk.photos_ids(id_candidate)
-                to_bot = self.__prepare_info(id_candidate)
+                to_bot = self.__prepare_info(id_candidate, photos_ids)
                 self.response(to_bot)
                 self.show_key(Keyboard.response_key)
                 command = self.speak(id_candidate, photos_ids)
@@ -110,7 +111,8 @@ class Bot:
             self.connect.connect_close()
             break
 
-    def show_favor(self, keys, client_id):
+    def show_favor(self, client_id):
+        keys = FAVOR_COMMANDS[self.is_end_dialog]
         key_begin = keys[0]
         key_end = keys[1]
         favor_ids = self.connect.show_candidates(client_id)
@@ -125,15 +127,15 @@ class Bot:
         self.show_key(key_end)
         return self.speak()
 
-    def __prepare_info(self, candidate_id):
-        photos_ids = self.connect.show_photo(candidate_id)
+    def __prepare_info(self, candidate_id, photos_ids=None):
+        if not photos_ids:
+            photos_ids = self.connect.show_photo(candidate_id)
         response = self.vk.show_candidate(candidate_id)
-        address = {1: 'её', 2: 'его'}
         first_name = response['first_name']
         last_name = response['last_name']
         sex = response['sex']
         name = f'''Имя кандидата: {first_name} {last_name}
-                   Ссылка на {address[sex]} профиль: https://vk.com/id{candidate_id}'''
+                   Ссылка на {ADDRESS[sex]} профиль: https://vk.com/id{candidate_id}'''
         attachments = [f'photo{candidate_id}_{photo_id}' for photo_id in photos_ids]
         attachments = ','.join(attachments)
         return name, attachments
