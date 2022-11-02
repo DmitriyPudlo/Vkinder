@@ -17,8 +17,31 @@ def prepare_info(candidate_id, response, photos_ids):
     return info
 
 
+def prepare_response(key_word, user_id, token, count=None):
+    vk = VK(token)
+    connect = Connector()
+    to_response = []
+    candidates_ids = []
+    photos_ids = []
+    if key_word == 'search':
+        candidates_ids = vk.search_candidate(user_id, count=count)
+    elif key_word == 'favor':
+        candidates_ids = connect.show_candidates(user_id)
+    for id_candidate in candidates_ids:
+        if key_word == 'search':
+            photos_ids = vk.photos_ids(id_candidate)
+        elif key_word == 'favor':
+            photos_ids = connect.show_photo(id_candidate)
+        response = vk.show_candidate(id_candidate)
+        time.sleep(0.5)
+        candidates_info = prepare_info(id_candidate, response, photos_ids)
+        to_response.append(candidates_info)
+    return to_response
+
+
 @app.route('/vkinder/user/search_candidate', methods=['GET'])
 def get_candidate():
+    key_word = 'search'
     user_id = request.args.get('user_id')
     token = request.args.get('token')
     count = request.args.get('count')
@@ -26,34 +49,18 @@ def get_candidate():
         count = int(count)
     if not token or not user_id:
         abort(404)
-    vk = VK(token)
-    to_response = []
-    candidates_ids = vk.search_candidate(user_id, count=count)
-    for id_candidate in candidates_ids:
-        photos_ids = vk.photos_ids(id_candidate)
-        response = vk.show_candidate(id_candidate)
-        time.sleep(0.5)
-        candidates_info = prepare_info(id_candidate, response, photos_ids)
-        to_response.append(candidates_info)
+    to_response = prepare_response(key_word, user_id, token, count)
     return jsonify(to_response)
 
 
 @app.route('/vkinder/user/favor', method=['GET'])
 def get_favor():
+    key_word = 'favor'
     user_id = request.args.get('user_id')
     token = request.args.get('token')
     if not token or not user_id:
         abort(404)
-    vk = VK(token)
-    connect = Connector()
-    to_response = []
-    candidates_ids = connect.show_candidates(user_id)
-    for id_candidate in candidates_ids:
-        photos_ids = connect.show_photo(id_candidate)
-        response = vk.show_candidate(id_candidate)
-        time.sleep(0.5)
-        candidates_info = prepare_info(id_candidate, response, photos_ids)
-        to_response.append(candidates_info)
+    to_response = prepare_response(key_word, user_id, token)
     return jsonify(to_response)
 
 
