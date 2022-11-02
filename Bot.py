@@ -45,7 +45,7 @@ class Bot:
                                        "Сейчас я изучу твой профиль и постараюсь найти для тебя подходящего партнёра!")
                         return
 
-    def speak(self, user_id=None, photos_id=None):
+    def speak(self, id_candidate=None, photos_id=None):
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
                 if event.to_me:
@@ -54,7 +54,7 @@ class Bot:
                         self.write_msg(event.user_id, "Сейчас поищу...")
                         return
                     elif request == self.keyword.ADD_FAVOR:
-                        self.connect.add_candidate(event.user_id, user_id, photos_id)
+                        self.connect.add_candidate(event.user_id, id_candidate, photos_id)
                         keyboard = Keyboard.add_favor_key
                         self.write_msg(event.user_id, "Добавлен в ваш список избранных!", keyboard=keyboard)
                         return self.speak()
@@ -120,8 +120,8 @@ class Bot:
             favor_to_bot = self.__prepare_info(favor_id)
             self.response(favor_to_bot)
             self.show_key(key_begin)
-            answer = self.speak()
-            if answer == self.keyword.CONTINUE:
+            command = self.speak()
+            if command == self.keyword.CONTINUE:
                 return
         self.favor_ending()
         self.show_key(key_end)
