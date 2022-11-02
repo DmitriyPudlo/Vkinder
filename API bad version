@@ -20,18 +20,13 @@ def prepare_info(candidate_id, response, photos_ids):
 def prepare_response(key_word, user_id, token, count=None):
     vk = VK(token)
     connect = Connector()
+    TASKS = {'search': (vk.search_candidate, vk.photos_ids),
+             'favor': (connect.show_candidates, connect.show_photo)}
+    task = TASKS[key_word]
     to_response = []
-    candidates_ids = []
-    photos_ids = []
-    if key_word == 'search':
-        candidates_ids = vk.search_candidate(user_id, count=count)
-    elif key_word == 'favor':
-        candidates_ids = connect.show_candidates(user_id)
+    candidates_ids = task[0](user_id, count=count)
     for id_candidate in candidates_ids:
-        if key_word == 'search':
-            photos_ids = vk.photos_ids(id_candidate)
-        elif key_word == 'favor':
-            photos_ids = connect.show_photo(id_candidate)
+        photos_ids = task[1](id_candidate)
         response = vk.show_candidate(id_candidate)
         time.sleep(0.5)
         candidates_info = prepare_info(id_candidate, response, photos_ids)
@@ -67,5 +62,3 @@ def get_favor():
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
-
-
