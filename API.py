@@ -17,6 +17,11 @@ def prepare_info(candidate_id, response, photos_ids):
     return info
 
 
+def prepare_ids(favor_ids):
+    favor_ids = [int(id_) for id_ in favor_ids.split(',')]
+    return favor_ids
+
+
 @app.route('/vkinder/user/search_candidate', methods=['GET'])
 def get_candidate():
     user_id = request.args.get('user_id')
@@ -38,7 +43,7 @@ def get_candidate():
     return jsonify(to_response)
 
 
-@app.route('/vkinder/user/favor', method=['GET'])
+@app.route('/vkinder/user/favor', methods=['GET'])
 def get_favor():
     user_id = request.args.get('user_id')
     token = request.args.get('token')
@@ -54,6 +59,23 @@ def get_favor():
         time.sleep(0.5)
         candidates_info = prepare_info(id_candidate, response, photos_ids)
         to_response.append(candidates_info)
+    return jsonify(to_response)
+
+
+@app.route('/vkinder/user/add_favor', methods=['POST'])
+def add_favor():
+    user_id = request.args.get('user_id')
+    favor_ids = request.args.get('favor_ids')
+    token = request.args.get('token')
+    if not token or not user_id or not favor_ids:
+        abort(404)
+    favor_ids = prepare_ids(favor_ids)
+    connect = Connector()
+    to_response = []
+    for favor_id in favor_ids:
+        photo_ids = connect.show_photo(favor_id)
+        connect.add_candidate(user_id, favor_id, photo_ids)
+        to_response.append([user_id, favor_id, photo_ids])
     return jsonify(to_response)
 
 

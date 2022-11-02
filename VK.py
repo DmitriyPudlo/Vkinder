@@ -1,5 +1,6 @@
 import requests
 from datetime import date, datetime
+import time
 
 COUNT_CANDIDATE = 100
 ALL_PHOTO = 1000
@@ -39,6 +40,7 @@ class VK:
         requests_json = requests.get(f'{self.host}/users.search', params=params).json()
         response = requests_json['response']
         infos = response['items']
+        time.sleep(0.5)
         return infos
 
     def search_candidate(self, user_id, count=COUNT_CANDIDATE):
@@ -56,15 +58,15 @@ class VK:
         infos = self.__search_by_params(params)
         candidates_ids = [info['id'] for info in infos if not info['is_closed']]
         if len(candidates_ids) != count:
+            params['offset'] = count
             for _ in range(NUMBER_OF_ATTEMPTS):
-                params['offset'] = count
                 infos = self.__search_by_params(params)
                 for info in infos:
                     if not info['is_closed']:
                         candidates_ids.append(info['id'])
                         if len(candidates_ids) == count:
                             return candidates_ids
-                count += count
+                params['offset'] += count
         return candidates_ids
 
     def photos_ids(self, candidate_id):
