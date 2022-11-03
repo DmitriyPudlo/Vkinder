@@ -23,17 +23,18 @@ class Connector:
         sql_del_client = f"DELETE FROM client WHERE client_id = {client_id}"
         self.cursor_db.execute(sql_del_client)
 
-    def add_candidate(self, client_id, candidate_id, photos_id):
+    def add_candidate(self, client_id, candidate_id, photos_ids):
         sql_add_candidate = f"INSERT INTO pair (client_id, candidate_id)" \
                             f"VALUES ('{client_id}', '{candidate_id}')" \
                             f"ON CONFLICT (candidate_id) DO NOTHING"
-        for photo_id in photos_id:
-            self.__add_photo(candidate_id, photo_id)
         self.cursor_db.execute(sql_add_candidate)
+        for photo_id in photos_ids:
+            self.__add_photo(candidate_id, photo_id)
 
     def __add_photo(self, candidate_id, id_photo):
         sql_add_photo = f"INSERT INTO photo (candidate_id, photo_link)" \
-                        f"VALUES ({candidate_id}, {id_photo})"
+                        f"VALUES ({candidate_id}, {id_photo})" \
+                        f"ON CONFLICT (photo_link) DO NOTHING"
         self.cursor_db.execute(sql_add_photo)
 
     def show_candidates(self, client_id):
@@ -60,7 +61,7 @@ class Connector:
                            'CREATE TABLE IF NOT EXISTS photo (' \
                            'photo_id SERIAL PRIMARY KEY,' \
                            'candidate_id INT,' \
-                           'photo_link INT,' \
+                           'photo_link INT unique,' \
                            'FOREIGN KEY (candidate_id) REFERENCES pair (candidate_id));'
         self.cursor_db.execute(sql_create_table)
 
