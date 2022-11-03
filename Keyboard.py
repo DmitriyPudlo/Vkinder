@@ -13,10 +13,10 @@ class Keyword:
     START = 'Старт'
     NEXT = 'Следующий'
     STOP = "Стоп"
-    ADD_FAVOR = "Добавить в избранные"
+    ADD_FAVOR = "В избранное"
     SHOW_FAVOR = "Показать избранных"
-    CONTINUE = 'Продолжить просмотр кандидатов'
-    NEXT_FAVOR = 'Следующий из списка избранных'
+    CONTINUE = 'Продолжить просмотр'
+    NEXT_FAVOR = 'Следующий из избранных'
 
 
 greeting = [Keyword.START]
