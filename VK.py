@@ -1,6 +1,7 @@
 import requests
 from datetime import date, datetime
 import time
+from db import Connector
 
 COUNT_CANDIDATE = 100
 ALL_PHOTO = 1000
@@ -21,8 +22,11 @@ class VK:
     def __init__(self, token):
         self.token = token
         self.host = 'https://api.vk.com/method'
+        self.connect = Connector()
+        self.connect.create_database()
 
     def __search_client_info(self, user_id):
+        self.connect.add_client(user_id)
         check_sex = {1: 2, 2: 1}
         params = {'user_ids': user_id,
                   'fields': 'city, sex, bdate',
