@@ -70,10 +70,11 @@ def add_favor():
     if not token or not user_id or not favor_ids:
         abort(404)
     favor_ids = prepare_ids(favor_ids)
+    vk = VK(token)
     connect = Connector()
     to_response = []
     for favor_id in favor_ids:
-        photo_ids = connect.show_photo(favor_id)
+        photo_ids = vk.photos_ids(favor_id)
         connect.add_candidate(user_id, favor_id, photo_ids)
         to_response.append([user_id, favor_id, photo_ids])
     return jsonify(to_response)
