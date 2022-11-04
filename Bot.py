@@ -33,7 +33,7 @@ class Bot:
             if event.type == VkEventType.USER_TYPING:
                 keyboard = Keyboard.greeting_key
                 self.write_msg(event.user_id, 'Для начала работы нажми одну из кнопок!', keyboard=keyboard)
-            return event.user_id
+            return
 
     def start(self):
         for event in self.longpoll.listen():
@@ -43,6 +43,15 @@ class Bot:
                     if request == self.keyword.START:
                         self.write_msg(event.user_id,
                                        "Сейчас я изучу твой профиль и постараюсь найти для тебя подходящего партнёра!")
+                        candidates_ids = self.vk.search_candidate(event.user_id)
+                        for id_candidate in candidates_ids:
+                            photos_ids = self.vk.photos_ids(id_candidate)
+                            to_bot = self.__prepare_info(id_candidate, photos_ids)
+                            self.response(to_bot)
+                            self.show_key(Keyboard.response_key)
+                            command = self.speak(id_candidate, photos_ids)
+                            if command == self.keyword.STOP:
+                                return command
                         return
 
     def speak(self, id_candidate=None, photos_id=None):
@@ -60,7 +69,9 @@ class Bot:
                         return self.speak()
                     elif request == self.keyword.SHOW_FAVOR:
                         self.write_msg(event.user_id, "Сейчас выведу ваших избранных")
-                        self.show_favor(event.user_id)
+                        command = self.show_favor(event.user_id)
+                        if command == self.keyword.STOP:
+                            return command
                         return
                     elif request == self.keyword.CONTINUE:
                         self.write_msg(event.user_id, "Возвращаемся к просмотру кандидатов")
@@ -93,23 +104,15 @@ class Bot:
             return
 
     def bot_start(self):
-        client_id = self.greeting()
-        self.start()
-        while True:
-            candidates_ids = self.vk.search_candidate(client_id)
-            for id_candidate in candidates_ids:
-                photos_ids = self.vk.photos_ids(id_candidate)
-                to_bot = self.__prepare_info(id_candidate, photos_ids)
-                self.response(to_bot)
-                self.show_key(Keyboard.response_key)
-                command = self.speak(id_candidate, photos_ids)
-                if command == self.keyword.STOP:
-                    break
-            self.ending()
-            self.show_key(Keyboard.ending_key)
-            self.speak()
-            self.connect.connect_close()
-            break
+        self.greeting()
+        command = self.start()
+        if command == self.keyword.STOP:
+            return
+        self.ending()
+        self.show_key(Keyboard.ending_key)
+        self.speak()
+        self.connect.connect_close()
+        return
 
     def show_favor(self, client_id):
         keys = FAVOR_COMMANDS[self.is_end_dialog]
@@ -121,7 +124,9 @@ class Bot:
             self.response(favor_to_bot)
             self.show_key(key_begin)
             command = self.speak()
-            if command == self.keyword.CONTINUE:
+            if command == self.keyword.STOP:
+                return command
+            elif command == self.keyword.CONTINUE:
                 return
         self.favor_ending()
         self.show_key(key_end)
