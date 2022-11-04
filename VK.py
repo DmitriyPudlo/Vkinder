@@ -3,7 +3,7 @@ from datetime import date, datetime
 import time
 from db import Connector
 
-COUNT_CANDIDATE = 100
+COUNT_CANDIDATE = 5
 ALL_PHOTO = 1000
 IN_SEARCH = 6
 WITH_PHOTO = 1

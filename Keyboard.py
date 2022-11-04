@@ -24,8 +24,8 @@ response = [Keyword.NEXT, Keyword.STOP, Keyword.ADD_FAVOR, Keyword.SHOW_FAVOR]
 ending = [Keyword.SHOW_FAVOR, Keyword.STOP]
 favor_ending = [Keyword.CONTINUE]
 add_favor = [Keyword.NEXT, Keyword.STOP, Keyword.SHOW_FAVOR]
-response_favor = [Keyword.NEXT_FAVOR, Keyword.CONTINUE]
-response_favor_without_candidates = [Keyword.NEXT_FAVOR]
+response_favor = [Keyword.NEXT_FAVOR, Keyword.CONTINUE, Keyword.STOP]
+response_favor_without_candidates = [Keyword.NEXT_FAVOR, Keyword.STOP]
 favor_ending_without_candidates = [Keyword.STOP]
 
 greeting_key = create_keyboard(greeting)
