@@ -112,7 +112,7 @@ class Bot:
         return
 
     def show_favor(self, client_id):
-        keys = config.FAVOR_COMMANDS[self.is_end_dialog]
+        keys = config.FAVOR_COMMANDS_VK[self.is_end_dialog]
         key_begin = keys[0]
         key_end = keys[1]
         favor_ids = self.connect.show_candidates(client_id)
