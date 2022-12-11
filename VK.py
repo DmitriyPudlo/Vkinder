@@ -3,7 +3,7 @@ from datetime import date, datetime
 import time
 from db import Connector
 
-COUNT_CANDIDATE = 5
+COUNT_CANDIDATE = 10
 ALL_PHOTO = 1000
 IN_SEARCH = 6
 WITH_PHOTO = 1
@@ -99,3 +99,12 @@ class VK:
                   'last_name': response_open['last_name'],
                   'sex': response_open['sex']}
         return result
+
+    def get_user_id(self):
+        params = {'access_token': self.token,
+                  'v': '5.131'}
+        requests_json = requests.get(f'{self.host}/users.get', params=params).json()
+        response = requests_json['response']
+        response_open = response[0]
+        user_id = response_open['id']
+        return user_id

@@ -4,10 +4,7 @@ from VK import VK
 from db import Connector
 import vk_api
 import Keyboard
-
-FAVOR_COMMANDS = {False: (Keyboard.response_favor_without_candidates_key, Keyboard.favor_ending_without_candidates_key),
-                  True: (Keyboard.response_favor_key, Keyboard.favor_ending_key)}
-ADDRESS = {1: 'её', 2: 'его'}
+import config
 
 
 class Bot:
@@ -115,7 +112,7 @@ class Bot:
         return
 
     def show_favor(self, client_id):
-        keys = FAVOR_COMMANDS[self.is_end_dialog]
+        keys = config.FAVOR_COMMANDS_VK[self.is_end_dialog]
         key_begin = keys[0]
         key_end = keys[1]
         favor_ids = self.connect.show_candidates(client_id)
@@ -140,7 +137,7 @@ class Bot:
         last_name = response['last_name']
         sex = response['sex']
         name = f'''Имя кандидата: {first_name} {last_name}
-                   Ссылка на {ADDRESS[sex]} профиль: https://vk.com/id{candidate_id}'''
+                   Ссылка на {config.ADDRESS[sex]} профиль: https://vk.com/id{candidate_id}'''
         attachments = [f'photo{candidate_id}_{photo_id}' for photo_id in photos_ids]
         attachments = ','.join(attachments)
         return name, attachments
